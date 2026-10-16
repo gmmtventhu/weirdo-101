@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEIRDO-101 | Official Fan Universe</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Custom Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        night: {
+                            800: '#0B132B',
+                            900: '#070B19',
+                            950: '#030712'
+                        },
+                        starlight: {
+                            gold: '#F4E0A5',
+                            violet: '#C4B5FD',
+                            accent: '#6366F1'
+                        }
+                    },
+                    animation: {
+                        'spin-slow': 'spin 12s linear infinite',
+                        'float': 'float 4s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-8px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030712;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1C2541;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2A365B;
+        }
+        
+        .glass-card {
+            background: rgba(11, 19, 43, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(196, 181, 253, 0.12);
+        }
+        
+        .glass-card-hover {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-card-hover:hover {
+            transform: translateY(-4px);
+            border-color: rgba(244, 224, 165, 0.35);
+            box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.25);
+        }
+
+        .title-glow {
+            text-shadow: 0 0 25px rgba(196, 181, 253, 0.35), 0 0 50px rgba(99, 102, 241, 0.15);
+        }
+        
+        .star-glow {
+            box-shadow: 0 0 15px 2px rgba(244, 224, 165, 0.6);
+        }
+
+        canvas#starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="bg-black text-white font-sans antialiased selection:bg-purple-500 selection:text-white relative overflow-x-hidden">
+
+    <canvas id="starfield"></canvas>
+
+    <header id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 border-b border-transparent py-4 px-6 md:px-12 bg-night-950/80 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <a href="#home" class="group flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-full border border-starlight-gold/40 flex items-center justify-center bg-night-900/80 group-hover:border-starlight-gold transition-colors">
+                    <i data-lucide="orbit" class="w-4 h-4 text-starlight-gold animate-spin-slow"></i>
+                </div>
+                <span class="font-serif text-lg tracking-[0.25em] font-semibold text-slate-100 group-hover:text-starlight-gold transition-colors">
+                    WEIRDO<span class="text-starlight-violet">-101</span>
+                </span>
+            </a>
+
+            <nav class="hidden md:flex items-center space-x-8 text-xs tracking-[0.2em] font-medium uppercase text-slate-300">
+                <a href="#home" class="hover:text-starlight-gold transition-colors relative py-1">HOME</a>
+                <a href="#story" class="hover:text-starlight-gold transition-colors relative py-1">STORY</a>
+                <a href="#characters" class="hover:text-starlight-gold transition-colors relative py-1">CHARACTERS</a>
+                <a href="#locations" class="hover:text-starlight-gold transition-colors relative py-1">PLACES</a>
+                <a href="#universe" class="hover:text-starlight-gold transition-colors relative py-1">UNIVERSE</a>
+                <a href="#gallery" class="hover:text-starlight-gold transition-colors relative py-1">MEMORIES</a>
+                <button onclick="openAboutModal()" class="hover:text-starlight-gold transition-colors uppercase">ABOUT US</button>
+            </nav>
+
+            <div class="hidden md:block">
+                <button onclick="openCreditsModal()" class="px-4 py-2 rounded-full border border-starlight-violet/30 hover:border-starlight-gold text-xs tracking-wider text-starlight-violet hover:text-starlight-gold transition-all duration-300 bg-night-900/50 flex items-center gap-2">
+                    <i data-lucide="award" class="w-3.5 h-3.5"></i>
+                    <span>CREDITS</span>
+                </button>
+            </div>
+
+            <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden text-slate-300 hover:text-starlight-gold p-2">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden absolute top-full left-0 w-full bg-night-900/95 border-b border-starlight-violet/20 backdrop-blur-xl px-6 py-6">
+            <div class="flex flex-col space-y-4 text-sm tracking-[0.15em] font-medium uppercase">
+                <a href="#home" onclick="toggleMobileMenu()" class="text-slate-300 hover:text-starlight-gold py-2 border-b border-slate-800/50">HOME</a>
+                <a href="#story" onclick="toggleMobileMenu()" class="text-slate-300 hover:text-starlight-gold py-2 border-b border-slate-800/50">STORY</a>
+                <a href="#characters" onclick="toggleMobileMenu()" class="text-slate-300 hover:text-starlight-gold py-2 border-b border-slate-800/50">CHARACTERS</a>
+                <a href="#locations" onclick="toggleMobileMenu()" class="text-slate-300 hover:text-starlight-gold py-2 border-b border-slate-800/50">PLACES</a>
+                <a href="#universe" onclick="toggleMobileMenu()" class="text-slate-300 hover:text-starlight-gold py-2 border-b border-slate-800/50">UNIVERSE</a>
+                <a href="#gallery" onclick="toggleMobileMenu()" class="text-slate-300 hover:text-starlight-gold py-2 border-b border-slate-800/50">MEMORIES</a>
+                <button onclick="toggleMobileMenu(); openAboutModal()" class="text-slate-300 hover:text-starlight-gold py-2 border-b border-slate-800/50 text-left">ABOUT US (ARC)</button>
+                <button onclick="toggleMobileMenu(); openCreditsModal()" class="flex items-center gap-2 text-starlight-gold py-2 text-left">
+                    <i data-lucide="award" class="w-4 h-4"></i>
+                    <span>CREATOR CREDITS</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <section id="home" class="relative min-h-screen pt-28 pb-16 flex flex-col items-center justify-center text-center px-4 z-10 overflow-hidden">
+        <div class="relative w-64 h-64 mb-8 flex items-center justify-center">
+            <div class="absolute inset-0 rounded-full border border-starlight-violet/20 animate-[spin_12s_linear_infinite]"></div>
+            <div class="absolute inset-2 rounded-full border border-dashed border-starlight-gold/20 animate-[spin_20s_linear_infinite_reverse]"></div>
+            
+            <div class="absolute w-4 h-4 rounded-full bg-starlight-accent star-glow animate-pulse top-6 left-12 flex items-center justify-center">
+                <span class="text-[9px] font-mono text-white/80 -top-4 relative">Niran</span>
+            </div>
+            
+            <div class="absolute w-3 h-3 rounded-full bg-starlight-gold star-glow animate-pulse bottom-8 right-12 flex items-center justify-center">
+                <span class="text-[9px] font-mono text-white/80 -bottom-4 relative">Cheewa</span>
+            </div>
+
+            <div class="text-center z-10">
+                <i data-lucide="telescope" class="w-8 h-8 text-starlight-gold/80 mx-auto mb-1 animate-float"></i>
+            </div>
+        </div>
+
+        <div class="max-w-4xl mx-auto space-y-6">
+            <span class="text-xs md:text-sm tracking-[0.4em] uppercase text-starlight-violet font-medium block">
+                Novel by mostlycloudy | Illustrated by muneminus
+            </span>
+            
+            <h1 class="font-serif text-5xl sm:text-7xl md:text-8xl tracking-[0.25em] font-bold text-slate-50 title-glow uppercase">
+                WEIRDO<span class="text-starlight-violet font-normal">-101</span>
+            </h1>
+
+            <p class="font-serif italic text-lg sm:text-2xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed">
+                “You're just like the North Star, Phi... located right on the perpendicular axis, which means it never sets.”
+            </p>
+
+            <div class="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="#story" class="w-full sm:w-auto px-8 py-3.5 rounded-full bg-gradient-to-r from-starlight-accent to-indigo-700 text-white font-medium text-xs tracking-[0.2em] uppercase hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                    <span>Explore Chapters 1-30 Arc</span>
+                    <i data-lucide="compass" class="w-4 h-4"></i>
+                </a>
+
+                <a href="#characters" class="w-full sm:w-auto px-8 py-3.5 rounded-full border border-starlight-gold/40 hover:border-starlight-gold text-starlight-gold hover:bg-starlight-gold/10 text-xs tracking-[0.2em] uppercase transition-all flex items-center justify-center gap-2">
+                    <span>View 14 Characters</span>
+                    <i data-lucide="users" class="w-4 h-4"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="story" class="relative py-24 px-6 md:px-12 z-10 max-w-7xl mx-auto">
+        <div class="text-center space-y-3 mb-16">
+            <span class="text-xs uppercase tracking-[0.3em] text-starlight-violet font-semibold">CHAPTER-BY-CHAPTER PLOT BREAKDOWN (1–30)</span>
+            <h2 class="font-serif text-3xl md:text-5xl tracking-[0.15em] text-slate-100">THE STORY ARC</h2>
+            <div class="w-16 h-[1px] bg-starlight-gold/50 mx-auto my-4"></div>
+            <p class="text-slate-400 max-w-xl mx-auto text-sm">
+                Explore the four key emotional phases of Niran and Cheewa's journey across all 30 chapters.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Chapters 1-6 -->
+            <div class="glass-card glass-card-hover p-8 rounded-2xl border-t-2 border-t-starlight-accent">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-mono text-starlight-gold font-semibold uppercase tracking-wider">Chapters 1–6</span>
+                    <i data-lucide="bus" class="w-5 h-5 text-starlight-violet"></i>
+                </div>
+                <h3 class="font-serif text-2xl text-slate-100 mb-3">First Encounters & Niran's Crisis</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Niran meets Cheewa, becomes curious about him, and simultaneously struggles with losing his passion for judo. The unexpected bus collision sparks an entire chain of gravitational events.
+                </p>
+            </div>
+
+            <!-- Chapters 7-14 -->
+            <div class="glass-card glass-card-hover p-8 rounded-2xl border-t-2 border-t-starlight-violet">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-mono text-starlight-gold font-semibold uppercase tracking-wider">Chapters 7–14</span>
+                    <i data-lucide="globe" class="w-5 h-5 text-starlight-violet"></i>
+                </div>
+                <h3 class="font-serif text-2xl text-slate-100 mb-3">Gravity / Growing Connection</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    The Planetarium, astronomy, volunteer camp, judo lessons, and Science Building mystery bring Niran and Cheewa much closer together in orbit.
+                </p>
+            </div>
+
+            <!-- Chapters 15-23 -->
+            <div class="glass-card glass-card-hover p-8 rounded-2xl border-t-2 border-t-starlight-gold">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-mono text-starlight-gold font-semibold uppercase tracking-wider">Chapters 15–23</span>
+                    <i data-lucide="sparkles" class="w-5 h-5 text-starlight-gold"></i>
+                </div>
+                <h3 class="font-serif text-2xl text-slate-100 mb-3">Feelings + Mystery + Conflict</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Their relationship becomes increasingly obvious while the Aoy/Science Building conflict reaches its final resolution and exoneration.
+                </p>
+            </div>
+
+            <!-- Chapters 24-30 -->
+            <div class="glass-card glass-card-hover p-8 rounded-2xl border-t-2 border-t-indigo-400">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-mono text-starlight-gold font-semibold uppercase tracking-wider">Chapters 24–30</span>
+                    <i data-lucide="moon" class="w-5 h-5 text-indigo-400"></i>
+                </div>
+                <h3 class="font-serif text-2xl text-slate-100 mb-3">Family, Future & Relationship</h3>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Niran's family problems begin healing, Cheewa's own past is explored, Niran learns to reconsider his future, and their relationship becomes official under the night sky.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="characters" class="relative py-24 px-6 md:px-12 z-10 max-w-7xl mx-auto">
+        <div class="text-center space-y-3 mb-12">
+            <span class="text-xs uppercase tracking-[0.3em] text-starlight-violet font-semibold">THE UNIVERSE OF SOULS</span>
+            <h2 class="font-serif text-3xl md:text-5xl tracking-[0.15em] text-slate-100">CHARACTERS (14 PROFILES)</h2>
+            <div class="w-16 h-[1px] bg-starlight-gold/50 mx-auto my-4"></div>
+            <p class="text-slate-400 max-w-xl mx-auto text-sm">Choose a category below to explore specific character groups.</p>
+        </div>
+
+        <!-- Character Selection Filter Buttons -->
+        <div class="flex flex-wrap items-center justify-center gap-3 mb-14" id="char-filter-container">
+            <button onclick="filterCharacters('all')" class="char-filter-btn px-5 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium bg-starlight-accent text-white shadow-md transition-all">
+                All Characters (14)
+            </button>
+            <button onclick="filterCharacters('main')" class="char-filter-btn px-5 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium bg-night-900 border border-slate-700 text-slate-300 hover:border-starlight-gold transition-all">
+                Main Characters
+            </button>
+            <button onclick="filterCharacters('niran-friends')" class="char-filter-btn px-5 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium bg-night-900 border border-slate-700 text-slate-300 hover:border-starlight-gold transition-all">
+                Niran's Friends
+            </button>
+            <button onclick="filterCharacters('cheewa-friends')" class="char-filter-btn px-5 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium bg-night-900 border border-slate-700 text-slate-300 hover:border-starlight-gold transition-all">
+                Cheewa's Friends
+            </button>
+            <button onclick="filterCharacters('conflict')" class="char-filter-btn px-5 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium bg-night-900 border border-slate-700 text-slate-300 hover:border-starlight-gold transition-all">
+                Conflict Characters
+            </button>
+            <button onclick="filterCharacters('adult-school')" class="char-filter-btn px-5 py-2.5 rounded-full text-xs tracking-wider uppercase font-medium bg-night-900 border border-slate-700 text-slate-300 hover:border-starlight-gold transition-all">
+                Adult / School / Family
+            </button>
+        </div>
+
+        <!-- Characters Grid container -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8" id="characters-grid">
+            
+            <!-- 1. Niran -->
+            <div class="char-card glass-card p-8 rounded-3xl border-t-2 border-t-starlight-accent" data-category="main">
+                <span class="text-xs font-mono uppercase tracking-widest text-starlight-violet">Main Protagonist</span>
+                <h4 class="font-serif text-3xl text-slate-100 mt-1 mb-3">1. Pieng-Niran (Niran)</h4>
+                <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                    Niran is a student and a talented judo athlete who is beginning to lose his passion for the sport. He is more serious and practical than Cheewa, but he gradually becomes more open to new experiences because of him. His relationship with Cheewa is one of the central elements of the novel.
+                </p>
+                <div class="bg-night-900/80 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-1">
+                    <strong class="text-starlight-gold block mb-1">Important Traits:</strong>
+                    <ul class="list-disc list-inside space-y-1 text-slate-400">
+                        <li>Judo athlete</li>
+                        <li>Responsible and straightforward</li>
+                        <li>Initially uncertain about his future</li>
+                        <li>Protective of people close to him</li>
+                        <li>Becomes increasingly comfortable with Cheewa</li>
+                        <li>Has complicated family circumstances</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 2. Cheewa -->
+            <div class="char-card glass-card p-8 rounded-3xl border-t-2 border-t-starlight-gold" data-category="main">
+                <span class="text-xs font-mono uppercase tracking-widest text-starlight-gold">Main Protagonist / Love Interest</span>
+                <h4 class="font-serif text-3xl text-slate-100 mt-1 mb-3">2. Parncheewa "Cheewa"</h4>
+                <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                    Cheewa is Niran's younger schoolmate. He is strongly interested in astronomy, belongs to the Astronomy Club, and is known for being somewhat unusual compared with other students. He is intelligent, calm, curious, and communicates through astronomy and scientific ideas.
+                </p>
+                <div class="bg-night-900/80 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-1">
+                    <strong class="text-starlight-gold block mb-1">Important Traits:</strong>
+                    <ul class="list-disc list-inside space-y-1 text-slate-400">
+                        <li>Astronomy enthusiast & Astronomy Club member</li>
+                        <li>Student council member</li>
+                        <li>Learns judo from Niran; later plays basketball & drums</li>
+                        <li>Comes from a wealthy family</li>
+                        <li>Very protective of Niran (explicitly tells Niran he wanted to protect him)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 3. Hemarat -->
+            <div class="char-card glass-card p-6 rounded-2xl border border-slate-800" data-category="niran-friends">
+                <span class="text-[10px] font-mono text-starlight-gold block mb-1">Niran's Close Friend / Comic Relief</span>
+                <h4 class="font-serif text-xl text-slate-100 mb-2">3. Hemarat</h4>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Hemarat is one of Niran's closest friends and frequently teases Niran about Cheewa. Observant and often the first person to notice the growing connection between Niran and Cheewa. Also participates in the Science Building investigation.
+                </p>
+            </div>
+
+            <!-- 4. Thara -->
+            <div class="char-card glass-card p-6 rounded-2xl border border-slate-800" data-category="niran-friends">
+                <span class="text-[10px] font-mono text-starlight-gold block mb-1">Niran's Friend Group</span>
+                <h4 class="font-serif text-xl text-slate-100 mb-2">4. Thara</h4>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Thara is part of Niran's close friend group alongside Hemarat and Thipok. He often participates in conversations, school activities, and the investigation surrounding the fake Science Building ghost.
+                </p>
+            </div>
+
+            <!-- 5. Thipok -->
+            <div class="char-card glass-card p-6 rounded-2xl border border-slate-800" data-category="niran-friends">
+                <span class="text-[10px] font-mono text-starlight-gold block mb-1">Niran's Friend / Music Club</span>
+                <h4 class="font-serif text-xl text-slate-100 mb-2">5. Thipok</h4>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Thipok is another member of Niran's friend group involved in gathering photographic and video evidence for the Science Building investigation. Later becomes involved with the Music Club and asks Cheewa to help with a performance.
+                </p>
+            </div>
+
+            <!-- 6. Jomyut -->
+            <div class="char-card glass-card p-6 rounded-2xl border border-slate-800" data-category="cheewa-friends">
+                <span class="text-[10px] font-mono text-cyan-300 block mb-1">Cheewa's Close Friend / Astronomy Club</span>
+                <h4 class="font-serif text-xl text-slate-100 mb-2">6. Jomyut</h4>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Jomyut is one of the Astronomy Club members and is very close to Cheewa. Intelligent, glasses-wearing, and science-oriented. He also becomes part of Niran's wider friend group and frequently jokes about Niran and Cheewa's interactions.
+                </p>
+            </div>
+
+            <!-- 7. Cheewin -->
+            <div class="char-card glass-card p-6 rounded-2xl border border-slate-800" data-category="cheewa-friends">
+                <span class="text-[10px] font-mono text-cyan-300 block mb-1">Cheewa's Older Brother</span>
+                <h4 class="font-serif text-xl text-slate-100 mb-2">7. Cheewin</h4>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Cheewin is Cheewa's older brother. He is involved in taking care of Cheewa and occasionally interacts with Niran and their friends. Establishes that Cheewa's family is wealthy and drives him to school.
+                </p>
+            </div>
+
+            <!-- 8. Aoy -->
+            <div class="char-card glass-card p-6 rounded-2xl border border-slate-800" data-category="conflict">
+                <span class="text-[10px] font-mono text-rose-400 block mb-1">Antagonist / Schoolmate</span>
+                <h4 class="font-serif text-xl text-slate-100 mb-2">8. Aoy</h4>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Aoy has an ongoing conflict with Niran, repeatedly believing Niran is responsible for things happening to him. Their conflict connects to the fake Science Building ghost mystery before evidence clears Niran.
+                </p>
+            </div>
+
+            <!-- 9. Naw -->
+            <div class="char-card glass-card p-6 rounded-2xl border border-slate-800" data-category="conflict">
+                <span class="text-[10px] font-mono text-rose-400 block mb-1">Aoy's Associate</span>
+                <h4 class="font-serif text-xl text-slate-100 mb-2">9. Naw</h4>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Naw is connected to Aoy and the students responsible for the Science Building incidents. During the investigation, Naw acts as a decoy and secretly provides information about group movements.
+                </p>
+            </div>
+
+            <!-- 10. Professor Suchart -->
+            <div class="char-card glass-card p-6 rounded-2xl border border-slate-800" data-category="adult-school">
+                <span class="text-[10px] font-mono text-indigo-300 block mb-1">School Authority / Disciplinarian</span>
+                <h4 class="font-serif text-xl text-slate-100 mb-2">10. Professor Suchart</h4>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Professor Suchart handles disciplinary matters at school. Involved in Niran and Aoy's conflicts and the Science Building incident. Strict, but considers evidence before making decisions.
+                </p>
+            </div>
+
+            <!-- 11. Coach Ong -->
+            <div class="char-card glass-card p-6 rounded-2xl border border-slate-800" data-category="adult-school">
+                <span class="text-[10px] font-mono text-indigo-300 block mb-1">Judo Coach</span>
+                <h4 class="font-serif text-xl text-slate-100 mb-2">11. Coach Ong</h4>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Coach Ong is connected to Niran's judo career and is also associated with the national judo council. Plays an important role in Niran's athletic life and eventually encourages him to take time to recover and think about his future.
+                </p>
+            </div>
+
+            <!-- 12-14. Family Members -->
+            <div class="char-card glass-card p-6 rounded-2xl border border-slate-800" data-category="adult-school">
+                <span class="text-[10px] font-mono text-indigo-300 block mb-1">Parents & Family (12–14)</span>
+                <h4 class="font-serif text-xl text-slate-100 mb-2">12–14. Family Members</h4>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    <strong>Niran's Father:</strong> Struggles with Niran over his judo future; bond gradually heals.<br>
+                    <strong>Niran's Mother:</strong> Lives separately; Niran gradually gains better understanding of her.<br>
+                    <strong>Cheewa's Parents:</strong> Financially comfortable, providing Cheewa opportunities to explore diverse interests.
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="locations" class="relative py-24 px-6 md:px-12 z-10 max-w-7xl mx-auto">
+        <div class="text-center space-y-3 mb-16">
+            <span class="text-xs uppercase tracking-[0.3em] text-starlight-violet font-semibold">KEY PLACES</span>
+            <h2 class="font-serif text-3xl md:text-5xl tracking-[0.15em] text-slate-100">KEY LOCATIONS</h2>
+            <div class="w-16 h-[1px] bg-starlight-gold/50 mx-auto my-4"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="glass-card p-6 rounded-2xl border border-slate-800">
+                <h3 class="font-serif text-lg text-slate-100 mb-2">Music Club Room</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Niran's favorite hiding spot to avoid judo training.</p>
+            </div>
+            <div class="glass-card p-6 rounded-2xl border border-slate-800">
+                <h3 class="font-serif text-lg text-slate-100 mb-2">The Judo Gym</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Where tatami mats meet athletic pressure under Coach Ong.</p>
+            </div>
+            <div class="glass-card p-6 rounded-2xl border border-slate-800">
+                <h3 class="font-serif text-lg text-slate-100 mb-2">Aunt Daeng's Stall</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Cafeteria hotspot serving delicious food and warm conversations.</p>
+            </div>
+            <div class="glass-card p-6 rounded-2xl border border-slate-800">
+                <h3 class="font-serif text-lg text-slate-100 mb-2">Science Observatory</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Cheewa's rooftop sanctuary for stargazing and quiet discussions.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="universe" class="relative py-24 px-6 md:px-12 z-10 max-w-7xl mx-auto">
+        <div class="text-center space-y-3 mb-16">
+            <span class="text-xs uppercase tracking-[0.3em] text-starlight-violet font-semibold">PHYSICS & METAPHORS</span>
+            <h2 class="font-serif text-3xl md:text-5xl tracking-[0.15em] text-slate-100">THE UNIVERSE OF PHYSICS</h2>
+            <div class="w-16 h-[1px] bg-starlight-gold/50 mx-auto my-4"></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="glass-card p-8 rounded-2xl border border-starlight-violet/30">
+                <h3 class="font-serif text-xl text-slate-100 mb-3">Polaris (North Star)</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Located on the perpendicular axis, never sets, serving as Cheewa's constant reference point for Niran.</p>
+            </div>
+            <div class="glass-card p-8 rounded-2xl border border-starlight-violet/30">
+                <h3 class="font-serif text-xl text-slate-100 mb-3">Newton's Gravitation</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Every mass exerts a gravitational pull proportional to mass and distance squared—starting on the bus.</p>
+            </div>
+            <div class="glass-card p-8 rounded-2xl border border-starlight-violet/30">
+                <h3 class="font-serif text-xl text-slate-100 mb-3">Center of Gravity</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Balancing stability and rotation just like judo throws and Earth's orbit.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="gallery" class="py-20 relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 tracking-tight">
+          WEIRDO-101 Memories
+        </h2>
+        <p class="mt-4 text-lg text-slate-300 max-w-2xl mx-auto">
+          Share and keep moments inspired by Niran and Cheewa's universe.
+        </p>
+        <button id="open-memory-modal-btn" class="mt-6 inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium px-6 py-3 rounded-full shadow-lg shadow-indigo-900/40 border border-indigo-400/30">
+          <i data-lucide="plus-circle" class="w-5 h-5"></i>
+          Add Your Memory
+        </button>
+      </div>
+      <div id="memories-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+    </section>
+
+    <div id="memory-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+      <div class="bg-slate-900/90 border border-indigo-500/30 rounded-2xl max-w-lg w-full p-6 sm:p-8 relative text-slate-200">
+        <button id="close-memory-modal-btn" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+        <h3 class="text-2xl font-bold mb-1 text-indigo-200">Share a Memory</h3>
+        <form id="memory-form" class="space-y-4 mt-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">Select Photo *</label>
+            <input type="file" id="memory-photo-input" accept="image/*" class="w-full text-sm text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-600/30 file:text-indigo-200 cursor-pointer border border-slate-700 rounded-xl bg-slate-800/50 p-2" required />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">Memory Title *</label>
+            <input type="text" id="memory-title-input" placeholder="e.g. Stargazing Night" class="w-full px-4 py-2.5 rounded-xl bg-slate-800/60 border border-slate-700 text-white" required />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">Caption / Story</label>
+            <textarea id="memory-caption-input" rows="3" placeholder="What makes this moment special?" class="w-full px-4 py-2.5 rounded-xl bg-slate-800/60 border border-slate-700 text-white resize-none"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1">Your Name (Optional)</label>
+            <input type="text" id="memory-author-input" placeholder="e.g. Astro Explorer" class="w-full px-4 py-2.5 rounded-xl bg-slate-800/60 border border-slate-700 text-white" />
+          </div>
+          <div class="pt-4 flex justify-end gap-3">
+            <button type="button" id="cancel-memory-btn" class="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300">Cancel</button>
+            <button type="submit" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white">Save Memory</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="memory-lightbox" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+      <button id="close-lightbox-btn" class="absolute top-6 right-6 text-slate-400 hover:text-white bg-slate-900/60 p-2 rounded-full border border-slate-700 z-10">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+      <div class="max-w-4xl max-h-[90vh] flex flex-col items-center">
+        <img id="lightbox-img" src="" alt="Memory" class="max-h-[75vh] w-auto max-w-full rounded-2xl object-contain mb-4" />
+        <div class="text-center px-4">
+          <h4 id="lightbox-title" class="text-xl font-bold text-indigo-200"></h4>
+          <p id="lightbox-caption" class="text-sm text-slate-300 mt-1 max-w-xl"></p>
+          <span id="lightbox-author" class="text-xs text-indigo-400/80 mt-2 block"></span>
+        </div>
+      </div>
+    </div>
+
+    <footer class="relative z-10 border-t border-slate-800/80 bg-night-950 py-12 px-6 md:px-12 text-slate-400 text-xs">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+            <div>
+                <span class="font-serif text-lg tracking-[0.2em] font-semibold text-slate-200 block">WEIRDO-101</span>
+                <p class="italic text-slate-500">“Some people are like stars. Some people are like gravity.”</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="openAboutModal()" class="text-starlight-gold hover:underline">About ARC</button>
+                <span>|</span>
+                <button onclick="openCreditsModal()" class="text-starlight-violet hover:underline">Credits</button>
+            </div>
+        </div>
+    </footer>
+
+    <div id="about-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-card max-w-lg w-full p-8 rounded-3xl border border-starlight-accent/40 relative">
+            <button onclick="closeAboutModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <h3 class="font-serif text-2xl text-slate-100 mb-4">About ARC</h3>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed mb-4">
+                We are <strong class="text-starlight-gold">ARC</strong>—a dedicated collective of readers and stargazers brought together by our shared admiration for <strong class="text-slate-100">WEIRDO-101</strong> by mostlycloudy and muneminus.
+            </p>
+            <div class="bg-night-900/80 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-2 mb-6">
+                <p class="text-starlight-gold font-semibold uppercase tracking-wider">Contact ARC Collective:</p>
+                <div class="flex items-center gap-2 text-slate-300">
+                    <i data-lucide="phone" class="w-4 h-4 text-starlight-violet"></i>
+                    <span>09707184425</span>
+                </div>
+                <div class="flex items-center gap-2 text-slate-300">
+                    <i data-lucide="mail" class="w-4 h-4 text-starlight-violet"></i>
+                    <span>blenthusiasm101@gmail.com</span>
+                </div>
+            </div>
+            <button onclick="closeAboutModal()" class="w-full py-2.5 rounded-full bg-starlight-accent text-white text-xs uppercase font-semibold">Close</button>
+        </div>
+    </div>
+
+    <div id="credits-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-card max-w-lg w-full p-8 rounded-3xl border border-starlight-gold/40 relative">
+            <button onclick="closeCreditsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <h3 class="font-serif text-2xl text-slate-100 mb-4">Acknowledgements & Credits</h3>
+            <div class="space-y-2 text-xs text-slate-300 mb-6">
+                <p>Author: <strong class="text-starlight-gold">mostlycloudy</strong></p>
+                <p>Illustrator: <strong class="text-starlight-violet">muneminus</strong></p>
+            </div>
+            <button onclick="closeCreditsModal()" class="w-full py-2.5 rounded-full bg-starlight-gold text-night-950 text-xs uppercase font-semibold">Close</button>
+        </div>
+    </div>
+
+    <script>
+      // Starfield Canvas Animation
+      window.addEventListener('DOMContentLoaded', () => {
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+          width = canvas.width = window.innerWidth;
+          height = canvas.height = window.innerHeight;
+        });
+
+        const stars = Array.from({ length: 120 }, () => ({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          size: Math.random() * 1.5,
+          alpha: Math.random(),
+          speed: Math.random() * 0.05 + 0.01
+        }));
+
+        function animateStars() {
+          ctx.clearRect(0, 0, width, height);
+          ctx.fillStyle = '#ffffff';
+          stars.forEach(star => {
+            star.alpha += star.speed;
+            if (star.alpha > 1 || star.alpha < 0) star.speed *= -1;
+            ctx.globalAlpha = Math.abs(star.alpha);
+            ctx.fillRect(star.x, star.y, star.size, star.size);
+          });
+          requestAnimationFrame(animateStars);
+        }
+        animateStars();
+        if (window.lucide) lucide.createIcons();
+      });
+
+      // Character Filter Selection Feature
+      function filterCharacters(category) {
+        const cards = document.querySelectorAll('.char-card');
+        const buttons = document.querySelectorAll('.char-filter-btn');
+
+        // Update active button styling
+        buttons.forEach(btn => {
+          btn.classList.remove('bg-starlight-accent', 'text-white');
+          btn.classList.add('bg-night-900', 'border', 'border-slate-700', 'text-slate-300');
+        });
+
+        // Find clicked button and style as active
+        event.currentTarget.classList.remove('bg-night-900', 'border', 'border-slate-700', 'text-slate-300');
+        event.currentTarget.classList.add('bg-starlight-accent', 'text-white');
+
+        // Show/hide cards based on category
+        cards.forEach(card => {
+          const cardCat = card.getAttribute('data-category');
+          if (category === 'all' || cardCat === category) {
+            card.style.display = 'block';
+            setTimeout(() => { card.style.opacity = '1'; card.style.transform = 'translateY(0)'; }, 50);
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      }
+
+      // Memories Gallery Script
+      (function() {
+        const STORAGE_KEY = 'weirdo_101_memories';
+        let memories = [
+          { id: '1', title: 'Stargazing Night', caption: 'Quiet night skies near the observatory.', author: 'Astro Explorer', imageData: 'https://placehold.co/600x400/0f172a/c4b5fd?text=Observatory' },
+          { id: '2', title: 'Morning Bus Route', caption: 'Where gravity took effect.', author: 'Fan', imageData: 'https://placehold.co/600x400/070b19/f4e0a5?text=Bus+7.00+AM' }
+        ];
+
+        try {
+          const stored = localStorage.getItem(STORAGE_KEY);
+          if (stored) memories = JSON.parse(stored);
+        } catch(e) {}
+
+        const grid = document.getElementById('memories-grid');
+        const modal = document.getElementById('memory-modal');
+        const openBtn = document.getElementById('open-memory-modal-btn');
+        const closeBtn = document.getElementById('close-memory-modal-btn');
+        const cancelBtn = document.getElementById('cancel-memory-btn');
+        const form = document.getElementById('memory-form');
+        const lightbox = document.getElementById('memory-lightbox');
+
+        function render() {
+          if (!grid) return;
+          grid.innerHTML = '';
+          memories.forEach(mem => {
+            const card = document.createElement('div');
+            card.className = "bg-slate-900/60 border border-indigo-500/20 rounded-2xl overflow-hidden shadow-lg flex flex-col";
+            card.innerHTML = `
+              <div class="h-48 overflow-hidden cursor-pointer bg-slate-950">
+                <img src="${mem.imageData}" alt="${mem.title}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+              </div>
+              <div class="p-5 flex flex-col justify-between flex-grow">
+                <div>
+                  <h4 class="font-bold text-lg text-indigo-100">${mem.title}</h4>
+                  ${mem.caption ? `<p class="text-xs text-slate-300 mt-2">${mem.caption}</p>` : ''}
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-800 text-xs text-slate-400 flex justify-between">
+                  <span>${mem.author ? 'By ' + mem.author : 'Anonymous'}</span>
+                  <button class="text-rose-400 hover:underline" onclick="deleteMem('${mem.id}')">Delete</button>
+                </div>
+              </div>
+            `;
+            card.querySelector('img').addEventListener('click', () => {
+              document.getElementById('lightbox-img').src = mem.imageData;
+              document.getElementById('lightbox-title').textContent = mem.title;
+              document.getElementById('lightbox-caption').textContent = mem.caption || '';
+              document.getElementById('lightbox-author').textContent = mem.author ? 'Shared by ' + mem.author : '';
+              lightbox.classList.remove('hidden');
+            });
+            grid.appendChild(card);
+          });
+        }
+
+        window.deleteMem = function(id) {
+          memories = memories.filter(m => m.id !== id);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(memories));
+          render();
+        };
+
+        openBtn?.addEventListener('click', () => modal.classList.remove('hidden'));
+        closeBtn?.addEventListener('click', () => modal.classList.add('hidden'));
+        cancelBtn?.addEventListener('click', () => modal.classList.add('hidden'));
+        document.getElementById('close-lightbox-btn')?.addEventListener('click', () => lightbox.classList.add('hidden'));
+
+        form?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const fileInput = document.getElementById('memory-photo-input');
+          const titleInput = document.getElementById('memory-title-input');
+          const captionInput = document.getElementById('memory-caption-input');
+          const authorInput = document.getElementById('memory-author-input');
+          if (!fileInput.files[0]) return;
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            memories.unshift({
+              id: Date.now().toString(),
+              imageData: evt.target.result,
+              title: titleInput.value.trim(),
+              caption: captionInput.value.trim(),
+              author: authorInput.value.trim()
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(memories));
+            render();
+            form.reset();
+            modal.classList.add('hidden');
+          };
+          reader.readAsDataURL(fileInput.files[0]);
+        });
+
+        render();
+      })();
+
+      function toggleMobileMenu() { document.getElementById('mobile-menu').classList.toggle('hidden'); }
+      function openAboutModal() { document.getElementById('about-modal').classList.remove('hidden'); }
+      function closeAboutModal() { document.getElementById('about-modal').classList.add('hidden'); }
+      function openCreditsModal() { document.getElementById('credits-modal').classList.remove('hidden'); }
+      function closeCreditsModal() { document.getElementById('credits-modal').classList.add('hidden'); }
+    </script>
+</body>
+</html>
